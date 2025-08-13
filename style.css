@@ -1,0 +1,85 @@
+/* Global Dark Theme */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+h1, h2 {
+  color: #ffffff;
+}
+
+/* Links */
+a {
+  display: block;
+  margin: 15px;
+  font-size: 1.2em;
+  text-decoration: none;
+  color: #4dabf7;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Question Display */
+.question {
+  font-size: 1.5em;
+  margin: 20px 0;
+}
+
+/* Input Field */
+input {
+  padding: 10px;
+  font-size: 1.2em;
+  width: 100px;
+  background-color: #1e1e1e;
+  border: 1px solid #555;
+  border-radius: 5px;
+  color: #ffffff;
+}
+
+/* Buttons */
+button {
+  padding: 10px 20px;
+  font-size: 1em;
+  margin-top: 10px;
+  background-color: #4dabf7;
+  border: none;
+  border-radius: 5px;
+  color: #121212;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #339af0;
+}
+
+/* Results Section */
+.results {
+  margin-top: 30px;
+}
+
+/* Table */
+table {
+  margin: auto;
+  border-collapse: collapse;
+  width: 90%;
+  max-width: 600px;
+}
+th, td {
+  border: 1px solid #333;
+  padding: 10px;
+}
+th {
+  background: #1f1f1f;
+}
+
+/* Answer Colors */
+.correct {
+  background: rgba(40, 167, 69, 0.2);
+}
+.wrong {
+  background: rgba(220, 53, 69, 0.2);
+}
