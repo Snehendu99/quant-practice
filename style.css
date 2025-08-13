@@ -1,82 +1,77 @@
 body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #121212;
-  color: #e0e0e0;
-  font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
 
 .container {
-  background-color: #1e1e1e;
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
+    text-align: center;
+    max-width: 600px;
 }
 
 h1, h2 {
-  margin-bottom: 20px;
+    color: #00ffcc;
 }
 
 input, button {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
+    padding: 8px;
+    font-size: 1rem;
+    margin: 5px;
+    border-radius: 4px;
+    border: none;
 }
 
-input {
-  width: 150px;
+input[type="number"] {
+    width: 100px;
 }
 
 button {
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
 }
 
 button:hover {
-  background-color: #45a049;
+    background-color: #45a049;
+}
+
+.big-question {
+    font-size: 2rem;
+    margin: 20px 0;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
 }
 
 th, td {
-  padding: 8px;
-  border: 1px solid #444;
-}
-
-th {
-  background-color: #333;
-}
-
-/* Center content horizontally & vertically */
-body {
-    display: flex;
-    justify-content: center; /* Horizontal center */
-    align-items: center;     /* Vertical center */
-    min-height: 100vh;       /* Full viewport height */
-    margin: 0;
-    background-color: #121212; /* Dark theme background */
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-}
-
-.container {
-    background-color: #1e1e1e;
-    padding: 20px 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    padding: 8px;
+    border: 1px solid #555;
     text-align: center;
-    max-width: 500px;
-    width: 100%;
+}
+
+.module-list {
+    list-style: none;
+    padding: 0;
+}
+
+.module-list li {
+    margin: 10px 0;
+}
+
+.module-list a {
+    color: #00ffcc;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.module-list a:hover {
+    text-decoration: underline;
 }

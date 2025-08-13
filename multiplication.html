@@ -1,164 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multiplication Practice</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Multiplication Practice</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+<div class="container">
     <h1>Multiplication Practice</h1>
-
     <div id="setup">
-      <label for="numQuestions">Number of Questions:</label>
-      <input type="number" id="numQuestions" min="1" max="50" value="10">
-      <button id="startBtn">Start</button>
+        <label>Number of Questions: 
+            <input type="number" id="totalQuestions" min="1" max="100" value="10">
+        </label>
+        <button onclick="startPractice()">Start</button>
     </div>
 
-    <div id="quiz" style="display: none;">
-      <div id="question"></div>
-      <input type="number" id="answer" placeholder="Enter answer" autofocus>
+    <div id="quiz" style="display:none;">
+        <div id="question" class="big-question"></div>
+        <input type="number" id="answer" autocomplete="off">
+        <button id="submitBtn">Submit</button>
     </div>
 
-    <div id="results" style="display: none;">
-      <h2>Results</h2>
-      <p id="summary"></p>
-      <table id="resultsTable" border="1">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Question</th>
-            <th>Your Answer</th>
-            <th>Correct Answer</th>
-            <th>Time (s)</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <button id="downloadCSV">Download CSV</button>
+    <div id="results" style="display:none;">
+        <h2>Results</h2>
+        <p id="stats"></p>
+        <table border="1" id="resultsTable">
+            <tr>
+                <th>Q No</th>
+                <th>Question</th>
+                <th>Correct Answer</th>
+                <th>Your Answer</th>
+                <th>Time (s)</th>
+                <th>Result</th>
+            </tr>
+        </table>
+        <button onclick="restart()">Restart</button>
+        <button onclick="downloadCSV()">Download CSV</button>
     </div>
-  </div>
+</div>
 
-  <script>
-    let questions = [];
-    let currentIndex = 0;
-    let startTime, totalStartTime;
+<script>
+let totalQuestions, currentQuestion = 0, startTime, questionStartTime;
+let results = [];
 
-    document.getElementById('startBtn').addEventListener('click', startQuiz);
-    document.getElementById('answer').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') submitAnswer();
+function startPractice() {
+    totalQuestions = parseInt(document.getElementById("totalQuestions").value);
+    currentQuestion = 0;
+    results = [];
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    nextQuestion();
+}
+
+function nextQuestion() {
+    if (currentQuestion >= totalQuestions) {
+        endPractice();
+        return;
+    }
+    let num1 = Math.floor(Math.random() * (25 - 2 + 1)) + 2;
+    let num2 = Math.floor(Math.random() * (9 - 2 + 1)) + 2;
+    let questionText = `Q${currentQuestion + 1}: ${num1} × ${num2}`;
+    document.getElementById("question").textContent = questionText;
+    document.getElementById("answer").value = "";
+    document.getElementById("answer").focus();
+    startTime = Date.now();
+    questionStartTime = {num1, num2};
+}
+
+function submitAnswer() {
+    let answer = parseInt(document.getElementById("answer").value);
+    if (isNaN(answer)) return;
+    let timeTaken = (Date.now() - startTime) / 1000;
+    let correctAnswer = questionStartTime.num1 * questionStartTime.num2;
+    results.push({
+        question: `${questionStartTime.num1} × ${questionStartTime.num2}`,
+        correctAnswer,
+        userAnswer: answer,
+        time: timeTaken
     });
-    document.getElementById('downloadCSV').addEventListener('click', downloadCSV);
+    currentQuestion++;
+    nextQuestion();
+}
 
-    function startQuiz() {
-      const numQuestions = parseInt(document.getElementById('numQuestions').value);
-      if (isNaN(numQuestions) || numQuestions <= 0) return;
+function endPractice() {
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("results").style.display = "block";
 
-      questions = [];
-      for (let i = 0; i < numQuestions; i++) {
-        let num1 = Math.floor(Math.random() * 24) + 2; // 2-25
-        let num2 = Math.floor(Math.random() * 8) + 2;  // 2-9
-        questions.push({
-          questionNumber: i + 1,
-          num1,
-          num2,
-          correctAnswer: num1 * num2,
-          userAnswer: null,
-          timeTaken: 0
-        });
-      }
-      document.getElementById('setup').style.display = 'none';
-      document.getElementById('quiz').style.display = 'block';
-      currentIndex = 0;
-      totalStartTime = Date.now();
-      showQuestion();
-    }
+    let times = results.map(r => r.time);
+    let totalTime = times.reduce((a,b) => a+b, 0);
+    let avgTime = totalTime / times.length;
+    let minTime = Math.min(...times);
+    let maxTime = Math.max(...times);
+    let minQ = results[times.indexOf(minTime)].question;
+    let maxQ = results[times.indexOf(maxTime)].question;
 
-    function showQuestion() {
-      let q = questions[currentIndex];
-      document.getElementById('question').textContent = `${q.questionNumber}. ${q.num1} × ${q.num2} = ?`;
-      document.getElementById('answer').value = '';
-      document.getElementById('answer').focus();
-      startTime = Date.now();
-    }
+    document.getElementById("stats").innerHTML = `
+        Total Time: ${totalTime.toFixed(2)}s<br>
+        Average Time: ${avgTime.toFixed(2)}s<br>
+        Fastest: ${minTime.toFixed(2)}s on ${minQ}<br>
+        Slowest: ${maxTime.toFixed(2)}s on ${maxQ}
+    `;
 
-    function submitAnswer() {
-      let q = questions[currentIndex];
-      q.userAnswer = parseInt(document.getElementById('answer').value);
-      q.timeTaken = ((Date.now() - startTime) / 1000).toFixed(2);
-
-      currentIndex++;
-      if (currentIndex < questions.length) {
-        showQuestion();
-      } else {
-        endQuiz();
-      }
-    }
-
-    function endQuiz() {
-      document.getElementById('quiz').style.display = 'none';
-      document.getElementById('results').style.display = 'block';
-
-      let totalTime = ((Date.now() - totalStartTime) / 1000).toFixed(2);
-      let times = questions.map(q => parseFloat(q.timeTaken));
-      let maxTime = Math.max(...times);
-      let minTime = Math.min(...times);
-      let avgTime = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(2);
-
-      document.getElementById('summary').innerHTML =
-        `Total Time: ${totalTime}s<br>
-         Max Time: ${maxTime}s (Q${questions[times.indexOf(maxTime)]?.questionNumber})<br>
-         Min Time: ${minTime}s (Q${questions[times.indexOf(minTime)]?.questionNumber})<br>
-         Avg Time: ${avgTime}s`;
-
-      let tbody = document.querySelector('#resultsTable tbody');
-      tbody.innerHTML = '';
-      questions.forEach(q => {
-        let row = document.createElement('tr');
+    let table = document.getElementById("resultsTable");
+    results.forEach((res, i) => {
+        let row = document.createElement("tr");
         row.innerHTML = `
-          <td>${q.questionNumber}</td>
-          <td>${q.num1} × ${q.num2}</td>
-          <td style="color:${q.userAnswer === q.correctAnswer ? 'lightgreen' : 'red'}">${q.userAnswer}</td>
-          <td>${q.correctAnswer}</td>
-          <td>${q.timeTaken}</td>
+            <td>${i + 1}</td>
+            <td>${res.question}</td>
+            <td>${res.correctAnswer}</td>
+            <td>${res.userAnswer}</td>
+            <td>${res.time.toFixed(2)}</td>
+            <td>${res.userAnswer === res.correctAnswer ? "✅" : "❌"}</td>
         `;
-        tbody.appendChild(row);
-      });
-    }
+        table.appendChild(row);
+    });
+}
 
-    function downloadCSV() {
-      const rows = [
-        ["Question #","A","B","Question","Your Answer","Correct Answer","Time (s)"]
-      ];
-      questions.forEach(q => {
-        rows.push([
-          q.questionNumber,
-          q.num1,
-          q.num2,
-          `${q.num1} × ${q.num2}`,
-          q.userAnswer,
-          q.correctAnswer,
-          q.timeTaken
-        ]);
-      });
+function restart() {
+    location.reload();
+}
 
-      const escapeCSV = v => {
-        const s = String(v ?? "");
-        return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
-      };
-      const csvString = rows.map(r => r.map(escapeCSV).join(",")).join("\r\n");
-      const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
+function downloadCSV() {
+    let csvContent = "data:text/csv;charset=utf-8," +
+        "Q No,Question,Correct Answer,Your Answer,Time (s),Result\n";
+    results.forEach((res, i) => {
+        csvContent += `${i + 1},${res.question},${res.correctAnswer},${res.userAnswer},${res.time.toFixed(2)},${res.userAnswer === res.correctAnswer ? "Correct" : "Wrong"}\n`;
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "multiplication_results.csv");
+    document.body.appendChild(link);
+    link.click();
+}
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `multiplication_results_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  </script>
+document.getElementById("submitBtn").addEventListener("click", submitAnswer);
+document.getElementById("answer").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") submitAnswer();
+});
+</script>
 </body>
 </html>
