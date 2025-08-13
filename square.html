@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Square Practice</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Square Practice</h1>
+
+    <div id="start-container">
+      <label for="questionCount">Number of Questions:</label>
+      <input type="number" id="questionCount" min="1" max="50" value="10">
+      <button id="startBtn">Start</button>
+    </div>
+
+    <div id="quiz-container" style="display:none;">
+      <div id="question"></div>
+      <input type="number" id="answer" placeholder="Enter answer" autofocus>
+      <button id="submitBtn">Submit</button>
+      <div id="stopwatch">Time: 0.00s</div>
+    </div>
+
+    <div id="result-container" style="display:none;">
+      <h2>Results</h2>
+      <div id="stats"></div>
+      <button id="downloadCSV">Download CSV</button>
+      <button id="restartBtn">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    let totalQuestions = 0;
+    let currentQuestion = 0;
+    let questions = [];
+    let questionStartTime = 0;
+    let totalStartTime = 0;
+    let stopwatchInterval;
+
+    const startBtn = document.getElementById('startBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const downloadBtn = document.getElementById('downloadCSV');
+    const questionDiv = document.getElementById('question');
+    const answerInput = document.getElementById('answer');
+    const stopwatchDiv = document.getElementById('stopwatch');
+    const statsDiv = document.getElementById('stats');
+
+    startBtn.addEventListener('click', startQuiz);
+    submitBtn.addEventListener('click', submitAnswer);
+    restartBtn.addEventListener('click', restartQuiz);
+    downloadBtn.addEventListener('click', downloadCSV);
+    answerInput.addEventListener('keyup', e => {
+      if (e.key === 'Enter') submitAnswer();
+    });
+
+    function startQuiz() {
+      totalQuestions = parseInt(document.getElementById('questionCount').value);
+      questions = [];
+      currentQuestion = 0;
+      totalStartTime = Date.now();
+
+      document.getElementById('start-container').style.display = 'none';
+      document.getElementById('quiz-container').style.display = 'block';
+      document.getElementById('result-container').style.display = 'none';
+
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const num = Math.floor(Math.random() * 29) + 2; // 2-30
+      currentQuestion++;
+      const questionText = `Q${currentQuestion}: Square of ${num} ?`;
+
+      questionDiv.textContent = questionText;
+      answerInput.value = '';
+      answerInput.focus();
+
+      questions.push({
+        questionNumber: currentQuestion,
+        number: num,
+        questionText,
+        correctAnswer: num * num,
+        userAnswer: null,
+        timeTaken: 0
+      });
+
+      questionStartTime = Date.now();
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = setInterval(() => {
+        stopwatchDiv.textContent = `Time: ${((Date.now() - questionStartTime) / 1000).toFixed(2)}s`;
+      }, 100);
+    }
+
+    function submitAnswer() {
+      if (currentQuestion > questions.length) return;
+
+      clearInterval(stopwatchInterval);
+      const timeTaken = ((Date.now() - questionStartTime) / 1000).toFixed(2);
+      const answer = parseInt(answerInput.value);
+
+      questions[questions.length - 1].userAnswer = answer;
+      questions[questions.length - 1].timeTaken = parseFloat(timeTaken);
+
+      if (currentQuestion < totalQuestions) {
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+
+    function endQuiz() {
+      clearInterval(stopwatchInterval);
+      document.getElementById('quiz-container').style.display = 'none';
+      document.getElementById('result-container').style.display = 'block';
+
+      const totalTime = ((Date.now() - totalStartTime) / 1000).toFixed(2);
+      const times = questions.map(q => q.timeTaken);
+      const maxTime = Math.max(...times);
+      const minTime = Math.min(...times);
+      const avgTime = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(2);
+
+      const maxQ = questions.find(q => q.timeTaken === maxTime);
+      const minQ = questions.find(q => q.timeTaken === minTime);
+
+      let html = `
+        <p>Total Time: ${totalTime}s</p>
+        <p>Max Time: ${maxTime}s (${maxQ.questionText})</p>
+        <p>Min Time: ${minTime}s (${minQ.questionText})</p>
+        <p>Average Time: ${avgTime}s</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+          <tr><th>Q#</th><th>Number</th><th>Your Answer</th><th>Correct</th><th>Time (s)</th><th>Result</th></tr>
+      `;
+      questions.forEach(q => {
+        html += `<tr style="color:${q.userAnswer === q.correctAnswer ? 'lightgreen' : 'red'}">
+          <td>${q.questionNumber}</td>
+          <td>${q.number}</td>
+          <td>${q.userAnswer}</td>
+          <td>${q.correctAnswer}</td>
+          <td>${q.timeTaken}</td>
+          <td>${q.userAnswer === q.correctAnswer ? 'Correct' : 'Wrong'}</td>
+        </tr>`;
+      });
+      html += `</table>`;
+      statsDiv.innerHTML = html;
+    }
+
+    function restartQuiz() {
+      document.getElementById('start-container').style.display = 'block';
+      document.getElementById('quiz-container').style.display = 'none';
+      document.getElementById('result-container').style.display = 'none';
+    }
+
+    function downloadCSV() {
+      const rows = [["Q#", "Number", "Question", "Your Answer", "Correct Answer", "Time (s)", "Result"]];
+      questions.forEach(q => {
+        rows.push([
+          q.questionNumber,
+          q.number,
+          q.questionText,
+          q.userAnswer,
+          q.correctAnswer,
+          q.timeTaken,
+          q.userAnswer === q.correctAnswer ? "Correct" : "Wrong"
+        ]);
+      });
+
+      const escapeCSV = v => {
+        const s = String(v ?? "");
+        return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+      };
+
+      const csvString = rows.map(r => r.map(escapeCSV).join(",")).join("\r\n");
+      const blob = new Blob(["\uFEFF" + csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `square_results_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
